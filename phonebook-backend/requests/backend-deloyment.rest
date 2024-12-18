@@ -1,0 +1,23 @@
+# The app is deployed using service in render.com
+
+POST https://fullstackopen-backends.onrender.com/api/persons
+Content-Type:application/json
+
+{
+    "name": "Nguyen Le Minh",
+    "number": "123-456-7890"
+}
+
+###
+# Get all persons
+
+GET https://fullstackopen-backends.onrender.com/api/persons
+
+###
+# Get one person, change the id
+GET https://fullstackopen-backends.onrender.com/api/persons/4
+
+###
+# Delete person
+
+DELETE https://fullstackopen-backends.onrender.com/api/persons/4

@@ -9,11 +9,11 @@ app.use(express.static('dist'))
 app.use(cors())
 
 app.use(morgan('tiny', {
-    skip: (r,s)=>{return r.method === 'POST'}
+    skip: (request,response)=>{return request.method === 'POST'}
 }))
-morgan.token('person', (r,s)=>{return JSON.stringify(r.body)})
+morgan.token('person', (request,response)=>{return JSON.stringify(response.body)})
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :person', {
-    skip: (r,s)=>{ return r.method !== 'POST' }
+    skip: (request,response)=>{ return request.method !== 'POST' }
 }))
 
 // let persons=[
@@ -39,13 +39,13 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 //     }
 // ]
 
-app.get('/', (r,s)=>{ /* Request and response */
-    return s.send('<h1>Phonebook backend application</h1>')
+app.get('/', (request,response)=>{
+    return response.send('<h1>Phonebook backend application</h1>')
 })
 
-app.get('/api/persons',(r,s)=>{
-    Person.find({}).then(p=>{
-        s.json(p)
+app.get('/api/persons',(request,response)=>{
+    Person.find({}).then(persons=>{
+        response.json(persons)
     })
 })
 
@@ -73,55 +73,39 @@ app.get('/api/persons/:id', (request,response,next)=>{
 
 app.put('/api/persons/:id', (request, response, next)=>{
     const id=request.params.id
-    const body=request.body
-    if (!body.name) {
-        response.status(400).json({
-            error: 'missing required "name" property'
-        })
-    } else if (!body.number) {
-        response.status(400).json({
-            error: 'missing required "number" property'
-        })
-    } else {
-        const newPerson={
-            name: body.name,
-            number: body.number,
-        }
-        Person.findByIdAndUpdate(id, newPerson, {new: true})
-            .then(updatedPerson=> {
-                response.json(updatedPerson)
-            }).catch(e=>next(e))
+    const {name, number}=request.body
+    const newPerson={
+        name: name,
+        number: number,
     }
-})
-
-app.delete('/api/persons/:id', (r,s,next)=>{
-    const id=r.params.id
-    Person.findByIdAndDelete(id)
-        .then(res=>{
-            s.status(204).end()
+    Person.findByIdAndUpdate(id, newPerson, {new: true, runValidators: true, context: 'query'})
+        .then(updatedPerson=> {
+            if (updatedPerson) {
+                response.json(updatedPerson)
+            } else {
+                response.status(404).end()
+            }
         }).catch(e=>next(e))
 })
 
-app.post('/api/persons', (r,s)=>{
-    const body=r.body
-    if (!body.name) {
-        s.status(400).json({
-            error: 'missing required "name" property'
-        })
-    } else if (!body.number) {
-        s.status(400).json({
-            error: 'missing required "number" property'
-        })
-    } else {
-        const p=new Person({
-            name: body.name,
-            number: body.number,
-        })
-        p.save()
-            .then(person=>{
-                s.status(201).json(person)
-            })
-    }
+app.delete('/api/persons/:id', (request,response,next)=>{
+    const id=request.params.id
+    Person.findByIdAndDelete(id)
+        .then(person=>{
+            response.status(204).end()
+        }).catch(e=>next(e))
+})
+
+app.post('/api/persons', (request,response,next)=>{
+    const {name, number}=request.body
+    const p=new Person({
+        name: name,
+        number: number,
+    })
+    p.save()
+        .then(person=>{
+            response.status(201).json(person)
+        }).catch(error=>next(error))
 })
 
 const unknownEndpoint=(request,response)=>{
@@ -130,8 +114,11 @@ const unknownEndpoint=(request,response)=>{
 app.use(unknownEndpoint)
 
 const errorHandler=(error, request,response,next)=>{
+    console.log('errorHandler',error)
     if (error.name==='CastError') {
         return response.status(400).json({error:'malformatted id'})
+    } else if (error.name==='ValidationError') {
+        return response.status(400).json({error: error.message})
     }
     next(error)
 }

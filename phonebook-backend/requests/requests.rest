@@ -6,7 +6,7 @@ Content-Type:application/json
 
 {
     "name": "Nguyen Le Minh",
-    "number": "123-456-7890"
+    "number": "123-4567890"
 }
 
 
@@ -24,19 +24,19 @@ GET http://localhost:3001/api/persons/67660b794f8ce8c06104836d
 ###
 # Change the id and name to an existing person
 
-PUT http://localhost:3001/api/persons/67660b794f8ce8c06104836d
+PUT http://localhost:3001/api/persons/67663e8f3800ee292cb9910e
 Content-Type: application/json
 
 {
     "name": "Nguyen Le Minh",
-    "number": "9876-5432"
+    "number": "987-65432"
 }
 
 
 ###
 # Delete person
 
-DELETE https://fullstackopen-backends.onrender.com/api/persons/4
+DELETE http://localhost:3001/api/persons/4
 
 
 ###

@@ -1,0 +1,43 @@
+# The app is deployed using service in render.com
+# Change the host to https://fullstackopen-backends.onrender.com if we want to test it.
+
+POST http://localhost:3001/api/persons
+Content-Type:application/json
+
+{
+    "name": "Nguyen Le Minh",
+    "number": "123-456-7890"
+}
+
+
+###
+# Get all persons
+
+GET http://localhost:3001/api/persons
+
+
+###
+# Get one person, change the id
+GET http://localhost:3001/api/persons/67660b794f8ce8c06104836d
+
+
+###
+# Change the id and name to an existing person
+
+PUT http://localhost:3001/api/persons/67660b794f8ce8c06104836d
+Content-Type: application/json
+
+{
+    "name": "Nguyen Le Minh",
+    "number": "9876-5432"
+}
+
+
+###
+# Delete person
+
+DELETE https://fullstackopen-backends.onrender.com/api/persons/4
+
+
+###
+GET http://localhost:3001/info
